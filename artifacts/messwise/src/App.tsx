@@ -1,53 +1,54 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
-import { useAuth } from "./hooks/useAuth"
-import Login from "./pages/Login"
-import Dashboard from "./pages/Dashboard"
-import MealPreference from "./pages/MealPreference"
-import Analytics from "./pages/Analytics"
-import AdminDashboard from "./pages/AdminDashboard"
+import { useState, useEffect } from 'react';
+import Login from './pages/Login';
+import StudentDashboard from './pages/StudentDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
-  const { isAuthenticated, user, isLoading } = useAuth()
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<'student' | 'admin' | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (isLoading) {
+  useEffect(() => {
+    const auth = localStorage.getItem('auth');
+    const role = localStorage.getItem('userRole');
+    if (auth && role) {
+      setIsAuthenticated(true);
+      setUserRole(role as 'student' | 'admin');
+    }
+    setLoading(false);
+  }, []);
+
+  const handleLogin = (role: 'student' | 'admin') => {
+    setIsAuthenticated(true);
+    setUserRole(role);
+    localStorage.setItem('auth', 'true');
+    localStorage.setItem('userRole', role);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUserRole(null);
+    localStorage.removeItem('auth');
+    localStorage.removeItem('userRole');
+  };
+
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary via-secondary to-accent">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent"></div>
-          <p className="mt-4 text-white text-lg">Loading MessWise...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
-    )
+    );
   }
 
-  return (
-    <Router>
-      <Routes>
-        {!isAuthenticated ? (
-          <>
-            <Route path="/login" element={<Login />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </>
-        ) : (
-          <>
-            {user?.role === "admin" ? (
-              <>
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="*" element={<Navigate to="/admin" replace />} />
-              </>
-            ) : (
-              <>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/meals" element={<MealPreference />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </>
-            )}
-          </>
-        )}
-      </Routes>
-    </Router>
-  )
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  if (userRole === 'admin') {
+    return <AdminDashboard onLogout={handleLogout} />;
+  }
+
+  return <StudentDashboard onLogout={handleLogout} />;
 }
 
-export default App
+export default App;

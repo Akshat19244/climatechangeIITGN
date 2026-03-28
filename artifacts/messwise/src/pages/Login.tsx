@@ -1,13 +1,11 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { useAuth } from "../hooks/useAuth"
 import { Lock, User, Leaf } from "lucide-react"
-import Button from "../components/ui/Button"
-import Input from "../components/ui/Input"
 
-function Login() {
-  const navigate = useNavigate()
-  const { login } = useAuth()
+interface LoginProps {
+  onLogin: (role: 'student' | 'admin') => void;
+}
+
+export default function Login({ onLogin }: LoginProps) {
   const [rollNumber, setRollNumber] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -19,27 +17,18 @@ function Login() {
     setIsLoading(true)
 
     try {
-      // Mock authentication - replace with actual API call
-      if (rollNumber && password) {
-        const mockUser = {
-          id: "user123",
-          rollNumber,
-          name: rollNumber.toUpperCase(),
-          email: `${rollNumber}@iitgn.ac.in`,
-          role: rollNumber === "admin" ? "admin" : "student",
-          walletBalance: 250,
-        }
-
-        login(mockUser, "mock-jwt-token-" + Date.now())
-
-        // Navigate based on role
-        if (mockUser.role === "admin") {
-          navigate("/admin")
-        } else {
-          navigate("/dashboard")
-        }
-      } else {
+      if (!rollNumber || !password) {
         setError("Please fill in all fields")
+        setIsLoading(false)
+        return
+      }
+
+      // Mock authentication
+      const isAdmin = rollNumber.toLowerCase() === "admin"
+      if (password === rollNumber) {
+        onLogin(isAdmin ? "admin" : "student")
+      } else {
+        setError("Invalid credentials")
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed")
@@ -144,5 +133,3 @@ function Login() {
     </div>
   )
 }
-
-export default Login
