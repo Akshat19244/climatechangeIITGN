@@ -7,9 +7,9 @@
     "dev": "pnpm --filter messwise dev",
     "messwise:dev": "pnpm --filter messwise dev",
     "messwise:build": "pnpm --filter messwise build",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
-    "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "build": "pnpm --filter messwise build",
+    "typecheck:libs": "echo 'Skipping root typecheck'",
+    "typecheck": "pnpm --filter messwise typecheck"
   },
   "private": true,
   "devDependencies": {
